@@ -126,3 +126,28 @@ class MessagesList(BaseElement):
             screen.blit(msg_surface, (self.pos.x,lowest_y - msg_surface.get_height() ))
 
             lowest_y -= msg_surface.get_height() + 10
+
+class Contacts(BaseElement):
+    def __init__(self, pos: Vector2, hidden_size: Vector2, shown_size: Vector2) -> None:
+        super().__init__(pos, hidden_size)
+        self.hidden_size = hidden_size
+        self.shown_size = shown_size
+        self.hidden = True
+        self.title_font = Font("ChakraPetch-Regular.ttf", 20)
+        self.title_image = self.title_font.render("Contacts", False, (0,0,0))
+
+    def handle_mouse_click(self, event: Event)->None:
+        if self.hidden:
+            self.size = Vector2(300,760)
+            self.hidden = False
+            return
+        self.size = self.hidden_size
+        self.hidden = True
+        
+
+    def draw(self, screen: Surface, is_active: bool = False):
+        outline = Rect(self.pos, self.size)
+        width = 1 if self.hidden else 0
+        rect(screen,(150,150,150), outline, width, 5)
+        title_pos = (self.pos + Vector2(10,2)) if self.hidden else (self.pos + Vector2(10,60)) 
+        screen.blit(self.title_image, title_pos)

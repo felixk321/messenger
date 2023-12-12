@@ -77,6 +77,6 @@ class LocalStorage(dict):
 local_storage = LocalStorage()
 
 local_storage["redis"] = None
-local_storage["is_authorized"] = False
+local_storage["is_authorized"] = True
 local_storage["queue"] = []
 local_storage["messages"] = []
