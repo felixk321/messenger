@@ -14,6 +14,9 @@ class BaseElement:
         self.pos = pos
         self.size = size
 
+    def get_rect(self) ->Rect:
+        return Rect(self.pos, self.size)
+
     def draw(self, screen: Surface, is_active: bool = False):
         raise NotImplementedError
     
@@ -127,6 +130,17 @@ class MessagesList(BaseElement):
 
             lowest_y -= msg_surface.get_height() + 10
 
+class ContactItem(BaseElement):
+
+    def __init__(self, pos: Vector2, txt: str) -> None:
+        self.font = Font("ChakraPetch-Regular.ttf", 18)
+        self.contact_img = self.font.render(txt, True, (0,0,0))
+
+        super().__init__(pos, Vector2(self.contact_img.get_size()))
+
+    def draw(self, screen:Surface, is_active:bool = False, ) ->None :
+        screen.blit(self.contact_img, self.pos)
+
 class Contacts(BaseElement):
     def __init__(self, pos: Vector2, hidden_size: Vector2, shown_size: Vector2) -> None:
         super().__init__(pos, hidden_size)
@@ -135,14 +149,31 @@ class Contacts(BaseElement):
         self.hidden = True
         self.title_font = Font("ChakraPetch-Regular.ttf", 20)
         self.title_image = self.title_font.render("Contacts", False, (0,0,0))
+        self.close_btn = Button(self.pos + Vector2(10,10), Vector2(20,20), "X", print) 
+        self.contact_items = self.create_contact_items()
+
+    def create_contact_items(self):
+        results = []
+        pos = self.pos + Vector2(10,60 + self.title_image.get_height() + 20)
+        for contact in local_storage["contacts"]:
+            item  = ContactItem(pos.copy(), contact)
+            results.append(item)
+            pos += Vector2(0, item.contact_img.get_height() + 5)
+        return results
+
+
 
     def handle_mouse_click(self, event: Event)->None:
         if self.hidden:
             self.size = Vector2(300,760)
             self.hidden = False
             return
-        self.size = self.hidden_size
-        self.hidden = True
+        
+        if self.close_btn.get_rect().collidepoint(event.pos):
+            self.size = self.hidden_size
+            self.hidden = True
+
+        
         
 
     def draw(self, screen: Surface, is_active: bool = False):
@@ -151,3 +182,12 @@ class Contacts(BaseElement):
         rect(screen,(150,150,150), outline, width, 5)
         title_pos = (self.pos + Vector2(10,2)) if self.hidden else (self.pos + Vector2(10,60)) 
         screen.blit(self.title_image, title_pos)
+
+        
+        if not self.hidden:
+            #draw close button
+            self.close_btn.draw(screen)
+
+            #draw list of contacts
+            for item in self.contact_items:
+                item.draw(screen)
