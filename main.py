@@ -8,7 +8,7 @@ from pygame import Vector2
 from typing import List, Optional
 from storage import local_storage
 
-
+# write hints into hints rectangle!
 pygame.init()
 
 SCREEN_WIDTH = 600

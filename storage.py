@@ -46,6 +46,17 @@ class LocalStorage(dict):
         self["queue"].append(dumps(data))
 
         self["current_message"] = ""
+
+    def get_contacts(self):
+        res = server_get("/contacts", {})
+        if res.status_code != 200:
+            print(res.text)
+        
+        data = res.json()
+        self["contacts"] = data
+
+    def get_contact_hints(self):
+        pass
     
     def message_sender(self,app):
         while not app._exit:
@@ -80,5 +91,5 @@ local_storage["redis"] = None
 local_storage["is_authorized"] = True
 local_storage["queue"] = []
 local_storage["messages"] = []
-local_storage["contacts"] = ["user1", "user2", "user3", "user4", "user5", "user6"]
-local_storage["contact_hints"] = ["user3", "user32", "user2"]
+local_storage["contacts"] = []
+local_storage["contact_hints"] = []
