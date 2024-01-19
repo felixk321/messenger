@@ -12,12 +12,12 @@ def server_get(path:str, query_params: Optional[Dict[str,str]]  = None) -> Respo
         url = url[:-1] #removes last "&"
 
 
-        res = get(url)
-        if res.status_code != 200:
-            print(res.content)
-            raise Exception("Server not responding")
+    res = get(url)
+    if res.status_code != 200:
+        print(res.content)
+        raise Exception("Server not responding")
 
-        return res
+    return res
         
         
         
