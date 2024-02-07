@@ -44,10 +44,7 @@ class LocalStorage(dict):
     def send_message(self):
         if self.get("current_message") == "":
             return
-        current_date = datetime.now().strftime("%H:%M %m-%d-%Y")
-
-        data = (self["login"], self["current_message"], current_date)
-        self["queue"].append(dumps(data))
+        server_get("/messages/send", {"friend": self["current_friend"], "content": self["current_message"], "session_id": self["token"]})
 
         self["current_message"] = ""
 
@@ -95,20 +92,33 @@ class LocalStorage(dict):
         res = server_get("/add_contact", {"login":friend_id, "session_id": self["token"]})
         print(res.text)
         self.get_contacts()
+
+    def get_messages(self,friend: str):
+
+        res = server_get("/messages/list", {"friend":friend, "start": "0", "end": "10", "session_id": self["token"]})
+        
+        self["messages"] = []
+        for row_msg in res.json():
+            if  row_msg == "":
+                continue
+            ts,txt = row_msg.split("|")
+
+            dt = datetime.fromtimestamp(float(ts))
+            dtf = dt.strftime("%m %d %H:%M")
+
+            self["messages"].append(("asdfa", txt, dtf))
+        self["messages"] = list(reversed(self["messages"] ))
+    
+
+
     
     def receive_messages(self, app):
-        while self["redis"] is None:
-            if app._exit:
-                return
-            sleep(1)
-
-        redis = self["redis"]
-        listener = redis.pubsub()
-        listener.subscribe(self["broadcast_channel"])
         while not app._exit: 
-            while msg := listener.get_message(ignore_subscribe_messages=True):
-                data = loads(msg["data"])
-                self["messages"].append(data)
+            if self["current_friend"] is None:
+                sleep(1)
+                continue
+
+            self.get_messages(self["current_friend"])
             sleep(1)
 
 local_storage = LocalStorage()
@@ -119,3 +129,5 @@ local_storage["queue"] = []
 local_storage["messages"] = []
 local_storage["contacts"] = []
 local_storage["contact_hints"] = []
+local_storage["current_friend"] = None
+local_storage["center_title"] = "Messenger"

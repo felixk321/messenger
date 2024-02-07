@@ -3,16 +3,20 @@ from threading import Thread
 import pygame
 from time import sleep
 from screen import Screen
-from elements import ScreenTitle, TextInput, Button, MessagesList, Contacts
+from elements import ScreenTitle, TextInput, Button, MessagesList, Contacts, DynamicScreenTitle
 from pygame import Vector2
 from typing import List, Optional
 from storage import local_storage
 
-# write hints into hints rectangle!
+
 pygame.init()
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
+
+#welcome_screen = Screen()
+#welcome_screen.add_element(ScreenTitle(Vector2(SCREEN_WIDTH/2,100), "Welcome to Messenger"))
+
 
 signup_screen = Screen()
 signup_screen.add_element(ScreenTitle(Vector2(SCREEN_WIDTH/2,100), "Sign up"))
@@ -23,7 +27,7 @@ signup_screen.add_element(Button(Vector2(SCREEN_WIDTH/2 - 50,350),Vector2(100,50
 
 
 main_screen = Screen()
-main_screen.add_element(ScreenTitle(Vector2(SCREEN_WIDTH/2,100), "Messenger"))
+main_screen.add_element(DynamicScreenTitle(Vector2(SCREEN_WIDTH/2,100), "center_title"))
 
 main_screen.add_element(TextInput(Vector2(20, SCREEN_HEIGHT - 70), Vector2(SCREEN_WIDTH - 40, 50), "Type your message", "current_message"))
 
@@ -56,7 +60,7 @@ class Messenger:
         token_file.close()
 
         self.receiver = Thread(target = local_storage.receive_messages, args = (self,))
-        #self.receiver.start()
+        self.receiver.start()
 
         self.sender = Thread(target = local_storage.message_sender, args = (self,))
         #self.sender.start()

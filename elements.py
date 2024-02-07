@@ -117,8 +117,8 @@ class ScreenTitle(BaseElement):
     def __init__(self, pos: Vector2, txt: str) -> None:
         
         self.txt = txt
-        font = Font("ChakraPetch-Regular.ttf", 48)
-        self.txt_surface = font.render(self.txt, True, (0,0,0))
+        self.font = Font("ChakraPetch-Regular.ttf", 48)
+        self.txt_surface = self.font.render(self.txt, True, (0,0,0))
         self.delta = Vector2(self.txt_surface.get_width()/2,0)
 
         super().__init__(pos, Vector2(self.txt_surface.get_size()))
@@ -127,7 +127,20 @@ class ScreenTitle(BaseElement):
         return
 
     def draw(self, screen: Surface, is_active: bool = False):
+        self.txt_surface = self.font.render(self.txt, True, (0,0,0))
         screen.blit(self.txt_surface, self.pos-self.delta)
+
+class DynamicScreenTitle(ScreenTitle):
+    def __init__(self, pos: Vector2, storage_key:str) -> None:
+        self.storage_key = storage_key
+        super().__init__(pos, local_storage[storage_key])
+
+    def draw(self, screen: Surface, is_active: bool = False):
+        self.txt_surface = self.font.render(local_storage[self.storage_key], True, (0,0,0))
+        screen.blit(self.txt_surface, self.pos-self.delta)
+
+        
+        
 
 class MessagesList(BaseElement):
     def __init__(self, pos: Vector2, size: Vector2) -> None:
@@ -162,6 +175,7 @@ class ContactItem(BaseElement):
 
     def __init__(self, pos: Vector2, txt: str) -> None:
         self.font = Font("ChakraPetch-Regular.ttf", 18)
+        self.contact_id = txt
         self.contact_img = self.font.render(txt, True, (0,0,0))
 
         super().__init__(pos, Vector2(self.contact_img.get_size()))
@@ -184,7 +198,7 @@ class Contacts(BaseElement):
 
         self.search_is_active = False
 
-    def create_contact_items(self):
+    def create_contact_items(self) ->List[ContactItem]: 
         results = []
         pos = self.pos + Vector2(10,100 + self.title_image.get_height() + 20)
         for contact in local_storage["contacts"]:
@@ -225,12 +239,17 @@ class Contacts(BaseElement):
                 for item in local_storage["contact_hints"]:
                     
                     item_rect = Rect(item_pos, Vector2(hints_rect.width, item_height))
-                    if item_rect.collidepoint(event.pos):
+                    if item_rect.collidepoint(event.pos) and self.search_is_active:
                         local_storage.add_friend(item)
                         self.contact_items = self.create_contact_items()
                     item_pos = item_pos + Vector2(0, item_height + 5)
 
-
+        for item in self.contact_items:
+            item_rect = item.get_rect()
+            if item_rect.collidepoint(event.pos):
+                local_storage.get_messages(item.contact_id)
+                local_storage["center_title"] = item.contact_id
+                local_storage["current_friend"] = item.contact_id
         
         self.search_is_active = False
 
